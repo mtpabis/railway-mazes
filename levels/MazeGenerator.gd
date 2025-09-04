@@ -46,40 +46,56 @@ func setup_styles():
 		update_tileset()
 
 func create_default_railway_style():
-	"""Create default railway styles for backward compatibility"""
-	# Railway without walls (original behavior)
-	var railway_no_walls = MazeStyle.new()
-	railway_no_walls.style_name = "Railway (No Walls)"
-	railway_no_walls.tileset = preload("res://levels/tileset.tres")
-	railway_no_walls.passage_source_id = 1
-	railway_no_walls.passage_terrain_set = 0 
-	railway_no_walls.passage_terrain_id = 0
-	railway_no_walls.has_walls = false
-	railway_no_walls.arrow_source_id = 0
-	railway_no_walls.description = "Classic railway tracks with empty space"
-	available_styles.append(railway_no_walls)
+	"""Create default maze styles showcasing different approaches"""
 	
-	# Railway with walls (if wall terrain exists)
-	var railway_with_walls = MazeStyle.new()
-	railway_with_walls.style_name = "Railway with Wall Terrain"
-	railway_with_walls.tileset = preload("res://levels/tileset.tres")
-	railway_with_walls.passage_source_id = 1
-	railway_with_walls.passage_terrain_set = 0 
-	railway_with_walls.passage_terrain_id = 0
-	railway_with_walls.has_walls = true
-	railway_with_walls.wall_source_id = 1
-	railway_with_walls.wall_terrain_set = 1  # Assuming terrain set 1 exists for walls
-	railway_with_walls.wall_terrain_id = 0
-	railway_with_walls.arrow_source_id = 0
-	railway_with_walls.description = "Railway tracks with auto-connecting wall terrain"
-	available_styles.append(railway_with_walls)
+	# 1. Railway passages only (original behavior)
+	var railway_passages = MazeStyle.new()
+	railway_passages.style_name = "Railway Passages Only"
+	railway_passages.tileset = preload("res://levels/tileset.tres")
+	railway_passages.has_passages = true
+	railway_passages.passage_source_id = 1
+	railway_passages.passage_terrain_set = 0 
+	railway_passages.passage_terrain_id = 0
+	railway_passages.has_walls = false
+	railway_passages.arrow_source_id = 0
+	railway_passages.description = "Passages define maze (walls empty)"
+	available_styles.append(railway_passages)
+	
+	# 2. Railway with walls (both visible)
+	var railway_both = MazeStyle.new()
+	railway_both.style_name = "Railway with Walls"
+	railway_both.tileset = preload("res://levels/tileset.tres")
+	railway_both.has_passages = true
+	railway_both.passage_source_id = 1
+	railway_both.passage_terrain_set = 0 
+	railway_both.passage_terrain_id = 0
+	railway_both.has_walls = true
+	railway_both.wall_source_id = 2  # Using wall source from tileset
+	railway_both.wall_terrain_set = 1  # Assuming terrain set 1 for walls
+	railway_both.wall_terrain_id = 0
+	railway_both.arrow_source_id = 0
+	railway_both.description = "Both passages and walls visible"
+	available_styles.append(railway_both)
+	
+	# 3. Dungeon walls only (classic maze style)
+	var dungeon_walls = MazeStyle.new()
+	dungeon_walls.style_name = "Dungeon Walls Only"
+	dungeon_walls.tileset = preload("res://levels/tileset.tres")
+	dungeon_walls.has_passages = false
+	dungeon_walls.has_walls = true
+	dungeon_walls.wall_source_id = 2  # Wall texture
+	dungeon_walls.wall_terrain_set = 1
+	dungeon_walls.wall_terrain_id = 0
+	dungeon_walls.arrow_source_id = 0
+	dungeon_walls.description = "Walls define maze (passages empty)"
+	available_styles.append(dungeon_walls)
 
 func _on_style_changed(index: int):
 	"""Handle style dropdown selection"""
 	if index >= 0 and index < available_styles.size():
 		current_style = available_styles[index]
 		update_tileset()
-		info_label.text = "Status: Style changed to '%s'" % current_style.get_style_display_name()
+		info_label.text = "Status: '%s' - %s" % [current_style.get_style_display_name(), current_style.get_maze_type()]
 
 func update_tileset():
 	"""Update tilemaps with current style's tileset"""
@@ -163,15 +179,20 @@ func place_tiles():
 	if not current_style:
 		info_label.text = "Status: Error - No style selected"
 		return
+	
+	if not current_style.is_valid():
+		info_label.text = "Status: Error - Style has no visible elements"
+		return
 		
 	# Clear existing tiles
 	passage_tilemap_layer.clear()
 	wall_tilemap_layer.clear()
 	
-	# Place passages first (bottom layer)
-	place_passages()
+	# Place passages (if style has passages)
+	if current_style.has_passages:
+		place_passages()
 	
-	# Place walls on top (if style has walls)
+	# Place walls (if style has walls)
 	if current_style.has_walls:
 		place_walls()
 	
@@ -245,9 +266,15 @@ func add_start_end_arrows():
 		if end_pos != Vector2i.ZERO:
 			break
 	
-	# Place arrow tiles on top of passages using current style
+	# Choose which layer to place arrows on based on style
+	var arrow_layer = passage_tilemap_layer
+	if not current_style.has_passages and current_style.has_walls:
+		# For wall-only mazes, place arrows on passage layer (empty space)
+		arrow_layer = passage_tilemap_layer
+	
+	# Place arrow tiles using current style
 	if start_pos != Vector2i.ZERO:
-		passage_tilemap_layer.set_cell(start_pos, current_style.arrow_source_id, current_style.start_arrow_atlas_coords, 0)
+		arrow_layer.set_cell(start_pos, current_style.arrow_source_id, current_style.start_arrow_atlas_coords, 0)
 	
 	if end_pos != Vector2i.ZERO and end_pos != start_pos:
-		passage_tilemap_layer.set_cell(end_pos, current_style.arrow_source_id, current_style.end_arrow_atlas_coords, 0)
+		arrow_layer.set_cell(end_pos, current_style.arrow_source_id, current_style.end_arrow_atlas_coords, 0)

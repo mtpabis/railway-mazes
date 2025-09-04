@@ -1,7 +1,9 @@
-[gd_scene load_steps=6 format=4 uid="uid://ckpurvlebof57"]
+[gd_scene load_steps=10 format=4 uid="uid://ckpurvlebof57"]
 
-[ext_resource type="Texture2D" uid="uid://bhdp2q36s4kde" path="res://arrows.png" id="1_d8o5c"]
-[ext_resource type="Texture2D" uid="uid://djp1kco41tu20" path="res://cropped.png" id="2_maiuk"]
+[ext_resource type="Texture2D" uid="uid://bhdp2q36s4kde" path="res://tile_sources/arrows.png" id="1_d8o5c"]
+[ext_resource type="Texture2D" uid="uid://djp1kco41tu20" path="res://tile_sources/cropped.png" id="2_maiuk"]
+[ext_resource type="Texture2D" uid="uid://ybug3uo28en4" path="res://tile_sources/wall.png" id="3_2sh53"]
+[ext_resource type="Texture2D" uid="uid://chyl4tsyxawv3" path="res://tile_sources/floor01.png" id="4_ybww7"]
 
 [sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_5o2xg"]
 texture = ExtResource("1_d8o5c")
@@ -93,6 +95,16 @@ texture_region_size = Vector2i(128, 128)
 5:3/0/terrain = 0
 5:3/0/terrains_peering_bit/bottom_side = 0
 
+[sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_ais85"]
+texture = ExtResource("3_2sh53")
+texture_region_size = Vector2i(64, 64)
+0:0/0 = 0
+
+[sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_m7148"]
+texture = ExtResource("4_ybww7")
+texture_region_size = Vector2i(64, 64)
+0:0/0 = 0
+
 [sub_resource type="TileSet" id="TileSet_5o2xg"]
 tile_size = Vector2i(128, 128)
 terrain_set_0/mode = 2
@@ -100,6 +112,8 @@ terrain_set_0/terrain_0/name = "Rails"
 terrain_set_0/terrain_0/color = Color(0.5, 0.34375, 0.25, 1)
 sources/1 = SubResource("TileSetAtlasSource_t78df")
 sources/0 = SubResource("TileSetAtlasSource_5o2xg")
+sources/2 = SubResource("TileSetAtlasSource_ais85")
+sources/3 = SubResource("TileSetAtlasSource_m7148")
 
 [node name="Node2D" type="Node2D"]
 

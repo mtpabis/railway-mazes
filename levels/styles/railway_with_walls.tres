@@ -1,9 +1,11 @@
-[gd_resource type="MazeStyle" load_steps=2 format=3 uid="uid://bvsv4l2n7g6lh"]
+[gd_resource type="MazeStyle" script_class="MazeStyle" load_steps=3 format=3 uid="uid://bvsv4l2n7g6lh"]
 
 [ext_resource type="TileSet" uid="uid://cfr3g543ytxy1" path="res://levels/tileset.tres" id="1_railway_tileset"]
-[ext_resource type="Script" uid="uid://cv5mtwh5qjlbm" path="res://levels/MazeStyle.gd" id="2_maze_style_script"]
+[ext_resource type="Script" uid="uid://b3hsjehptw4gj" path="res://levels/MazeStyle.gd" id="2_maze_style_script"]
 
 [resource]
+resource_local_to_scene = false
+resource_name = ""
 script = ExtResource("2_maze_style_script")
 style_name = "Railway with Stone Walls"
 tileset = ExtResource("1_railway_tileset")
@@ -12,6 +14,8 @@ passage_terrain_set = 0
 passage_terrain_id = 0
 has_walls = true
 wall_source_id = 1
+wall_terrain_set = 1
+wall_terrain_id = 0
 wall_atlas_coords = Vector2i(6, 2)
 wall_alternative_tile = 0
 arrow_source_id = 0

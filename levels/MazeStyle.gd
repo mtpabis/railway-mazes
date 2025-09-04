@@ -6,6 +6,7 @@ class_name MazeStyle
 
 # Passage (track/path) configuration
 @export_group("Passages")
+@export var has_passages: bool = true
 @export var passage_source_id: int = 1
 @export var passage_terrain_set: int = 0
 @export var passage_terrain_id: int = 0
@@ -33,3 +34,18 @@ func _init():
 
 func get_style_display_name() -> String:
 	return style_name if style_name != "" else "Unnamed Style"
+
+func get_maze_type() -> String:
+	"""Return a description of what defines the maze"""
+	if has_passages and has_walls:
+		return "Both passages and walls"
+	elif has_passages and not has_walls:
+		return "Passages define maze (walls empty)"
+	elif not has_passages and has_walls:
+		return "Walls define maze (passages empty)" 
+	else:
+		return "Empty maze (neither passages nor walls)"
+
+func is_valid() -> bool:
+	"""Check if the style has at least one visible element"""
+	return has_passages or has_walls
