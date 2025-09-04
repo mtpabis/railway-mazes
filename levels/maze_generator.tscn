@@ -59,6 +59,20 @@ value = 21.0
 [node name="HSeparator2" type="HSeparator" parent="UI/VBoxContainer"]
 layout_mode = 2
 
+[node name="StyleContainer" type="HBoxContainer" parent="UI/VBoxContainer"]
+layout_mode = 2
+
+[node name="StyleLabel" type="Label" parent="UI/VBoxContainer/StyleContainer"]
+layout_mode = 2
+text = "Style:"
+
+[node name="StyleDropdown" type="OptionButton" parent="UI/VBoxContainer/StyleContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="HSeparator3" type="HSeparator" parent="UI/VBoxContainer"]
+layout_mode = 2
+
 [node name="GenerateButton" type="Button" parent="UI/VBoxContainer"]
 layout_mode = 2
 text = "Generate Maze"
@@ -67,7 +81,7 @@ text = "Generate Maze"
 layout_mode = 2
 text = "Clear"
 
-[node name="HSeparator3" type="HSeparator" parent="UI/VBoxContainer"]
+[node name="HSeparator4" type="HSeparator" parent="UI/VBoxContainer"]
 layout_mode = 2
 
 [node name="InfoLabel" type="Label" parent="UI/VBoxContainer"]
