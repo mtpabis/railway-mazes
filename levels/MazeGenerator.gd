@@ -30,11 +30,7 @@ func _ready():
 
 func setup_styles():
 	"""Initialize available styles and populate dropdown"""
-	# If no styles are configured, create a default railway style
-	if available_styles.is_empty():
-		create_default_railway_style()
-	
-	# Populate dropdown
+	# Populate dropdown with configured styles
 	style_dropdown.clear()
 	for i in range(available_styles.size()):
 		var style = available_styles[i]
@@ -46,59 +42,6 @@ func setup_styles():
 		style_dropdown.selected = 0
 		update_tileset()
 
-func create_default_railway_style():
-	"""Create default maze styles showcasing different approaches"""
-	
-	# 1. Railway passages only (original behavior)
-	var railway_passages = MazeStyle.new()
-	railway_passages.style_name = "Railway Passages Only"
-	railway_passages.tileset = preload("res://levels/tileset.tres")
-	railway_passages.has_passages = true
-	railway_passages.passage_source_id = 1
-	railway_passages.passage_terrain_set = 0 
-	railway_passages.passage_terrain_id = 0
-	railway_passages.has_walls = false
-	railway_passages.has_start_end_objects = true
-	railway_passages.object_source_id = 6
-	railway_passages.start_tile_atlas_coords = Vector2i(0, 0)
-	railway_passages.end_tile_atlas_coords = Vector2i(1, 0)
-	railway_passages.description = "Passages define maze (walls empty)"
-	available_styles.append(railway_passages)
-	
-	# 2. Railway with walls (both visible)
-	var railway_both = MazeStyle.new()
-	railway_both.style_name = "Railway with Walls"
-	railway_both.tileset = preload("res://levels/tileset.tres")
-	railway_both.has_passages = true
-	railway_both.passage_source_id = 1
-	railway_both.passage_terrain_set = 0 
-	railway_both.passage_terrain_id = 0
-	railway_both.has_walls = true
-	railway_both.wall_source_id = 3  # Wall source from updated tileset
-	railway_both.wall_terrain_set = 1  # Wall terrain set from updated tileset
-	railway_both.wall_terrain_id = 0
-	railway_both.has_start_end_objects = true
-	railway_both.object_source_id = 6
-	railway_both.start_tile_atlas_coords = Vector2i(0, 1)
-	railway_both.end_tile_atlas_coords = Vector2i(1, 1)
-	railway_both.description = "Both passages and walls visible"
-	available_styles.append(railway_both)
-	
-	# 3. Dungeon walls only (classic maze style)
-	var dungeon_walls = MazeStyle.new()
-	dungeon_walls.style_name = "Dungeon Walls Only"
-	dungeon_walls.tileset = preload("res://levels/tileset.tres")
-	dungeon_walls.has_passages = false
-	dungeon_walls.has_walls = true
-	dungeon_walls.wall_source_id = 3  # Wall source from updated tileset
-	dungeon_walls.wall_terrain_set = 1  # Wall terrain set from updated tileset
-	dungeon_walls.wall_terrain_id = 0
-	dungeon_walls.has_start_end_objects = true
-	dungeon_walls.object_source_id = 6
-	dungeon_walls.start_tile_atlas_coords = Vector2i(0, 0)
-	dungeon_walls.end_tile_atlas_coords = Vector2i(1, 0)
-	dungeon_walls.description = "Walls define maze (passages empty)"
-	available_styles.append(dungeon_walls)
 
 func _on_style_changed(index: int):
 	"""Handle style dropdown selection"""
