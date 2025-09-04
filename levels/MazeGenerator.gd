@@ -3,6 +3,7 @@ class_name MazeGenerator
 
 @onready var passage_tilemap_layer: TileMapLayer = $PassageTileMapLayer
 @onready var wall_tilemap_layer: TileMapLayer = $WallTileMapLayer
+@onready var object_tilemap_layer: TileMapLayer = $ObjectTileMapLayer
 @onready var generate_button: Button = $UI/VBoxContainer/GenerateButton
 @onready var clear_button: Button = $UI/VBoxContainer/ClearButton
 @onready var width_spinbox: SpinBox = $UI/VBoxContainer/SizeContainer/WidthSpinBox
@@ -57,7 +58,10 @@ func create_default_railway_style():
 	railway_passages.passage_terrain_set = 0 
 	railway_passages.passage_terrain_id = 0
 	railway_passages.has_walls = false
-	railway_passages.arrow_source_id = 0
+	railway_passages.has_start_end_objects = true
+	railway_passages.object_source_id = 0
+	railway_passages.start_tile_atlas_coords = Vector2i(0, 0)
+	railway_passages.end_tile_atlas_coords = Vector2i(1, 0)
 	railway_passages.description = "Passages define maze (walls empty)"
 	available_styles.append(railway_passages)
 	
@@ -70,10 +74,13 @@ func create_default_railway_style():
 	railway_both.passage_terrain_set = 0 
 	railway_both.passage_terrain_id = 0
 	railway_both.has_walls = true
-	railway_both.wall_source_id = 2  # Using wall source from tileset
-	railway_both.wall_terrain_set = 1  # Assuming terrain set 1 for walls
+	railway_both.wall_source_id = 3  # Wall source from updated tileset
+	railway_both.wall_terrain_set = 1  # Wall terrain set from updated tileset
 	railway_both.wall_terrain_id = 0
-	railway_both.arrow_source_id = 0
+	railway_both.has_start_end_objects = true
+	railway_both.object_source_id = 0
+	railway_both.start_tile_atlas_coords = Vector2i(0, 1)
+	railway_both.end_tile_atlas_coords = Vector2i(1, 1)
 	railway_both.description = "Both passages and walls visible"
 	available_styles.append(railway_both)
 	
@@ -83,10 +90,13 @@ func create_default_railway_style():
 	dungeon_walls.tileset = preload("res://levels/tileset.tres")
 	dungeon_walls.has_passages = false
 	dungeon_walls.has_walls = true
-	dungeon_walls.wall_source_id = 2  # Wall texture
-	dungeon_walls.wall_terrain_set = 1
+	dungeon_walls.wall_source_id = 3  # Wall source from updated tileset
+	dungeon_walls.wall_terrain_set = 1  # Wall terrain set from updated tileset
 	dungeon_walls.wall_terrain_id = 0
-	dungeon_walls.arrow_source_id = 0
+	dungeon_walls.has_start_end_objects = true
+	dungeon_walls.object_source_id = 0
+	dungeon_walls.start_tile_atlas_coords = Vector2i(0, 0)
+	dungeon_walls.end_tile_atlas_coords = Vector2i(1, 0)
 	dungeon_walls.description = "Walls define maze (passages empty)"
 	available_styles.append(dungeon_walls)
 
@@ -102,6 +112,7 @@ func update_tileset():
 	if current_style and current_style.tileset:
 		passage_tilemap_layer.tile_set = current_style.tileset
 		wall_tilemap_layer.tile_set = current_style.tileset
+		object_tilemap_layer.tile_set = current_style.tileset
 
 func _on_generate_pressed():
 	maze_width = int(width_spinbox.value)
@@ -123,6 +134,7 @@ func _on_generate_pressed():
 func _on_clear_pressed():
 	passage_tilemap_layer.clear()
 	wall_tilemap_layer.clear()
+	object_tilemap_layer.clear()
 	info_label.text = "Status: Cleared - Ready for new generation"
 
 func generate_maze():
@@ -187,6 +199,7 @@ func place_tiles():
 	# Clear existing tiles
 	passage_tilemap_layer.clear()
 	wall_tilemap_layer.clear()
+	object_tilemap_layer.clear()
 	
 	# Place passages (if style has passages)
 	if current_style.has_passages:
@@ -196,12 +209,14 @@ func place_tiles():
 	if current_style.has_walls:
 		place_walls()
 	
+	# Place objects (start/end markers, etc.)
+	if current_style.has_start_end_objects:
+		place_objects()
+	
 	# Force terrain updates
 	passage_tilemap_layer.notify_runtime_tile_data_update()
 	wall_tilemap_layer.notify_runtime_tile_data_update()
-	
-	# Add start/end arrows
-	add_start_end_arrows()
+	object_tilemap_layer.notify_runtime_tile_data_update()
 
 func place_walls():
 	"""Place wall tiles using terrain system for all non-passage positions"""
@@ -241,8 +256,8 @@ func place_passages():
 			current_style.passage_terrain_id
 		)
 
-func add_start_end_arrows():
-	"""Add start and end arrow markers using current style"""
+func place_objects():
+	"""Place object tiles (start/end markers) using current style"""
 	if not current_style:
 		return
 		
@@ -266,15 +281,19 @@ func add_start_end_arrows():
 		if end_pos != Vector2i.ZERO:
 			break
 	
-	# Choose which layer to place arrows on based on style
-	var arrow_layer = passage_tilemap_layer
-	if not current_style.has_passages and current_style.has_walls:
-		# For wall-only mazes, place arrows on passage layer (empty space)
-		arrow_layer = passage_tilemap_layer
-	
-	# Place arrow tiles using current style
+	# Place start and end object tiles on the object layer (always on top)
 	if start_pos != Vector2i.ZERO:
-		arrow_layer.set_cell(start_pos, current_style.arrow_source_id, current_style.start_arrow_atlas_coords, 0)
+		object_tilemap_layer.set_cell(
+			start_pos, 
+			current_style.object_source_id, 
+			current_style.start_tile_atlas_coords, 
+			current_style.start_tile_alternative
+		)
 	
 	if end_pos != Vector2i.ZERO and end_pos != start_pos:
-		arrow_layer.set_cell(end_pos, current_style.arrow_source_id, current_style.end_arrow_atlas_coords, 0)
+		object_tilemap_layer.set_cell(
+			end_pos, 
+			current_style.object_source_id, 
+			current_style.end_tile_atlas_coords, 
+			current_style.end_tile_alternative
+		)

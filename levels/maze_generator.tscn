@@ -14,11 +14,16 @@ tile_set = ExtResource("1_maze_tileset")
 position = Vector2(200, 200)
 tile_set = ExtResource("1_maze_tileset")
 
+[node name="ObjectTileMapLayer" type="TileMapLayer" parent="."]
+position = Vector2(200, 200)
+tile_set = ExtResource("1_maze_tileset")
+
 [node name="UI" type="Control" parent="."]
 layout_mode = 3
 anchors_preset = 0
 offset_right = 300.0
 offset_bottom = 200.0
+scale = Vector2(2, 2)
 
 [node name="VBoxContainer" type="VBoxContainer" parent="UI"]
 layout_mode = 1

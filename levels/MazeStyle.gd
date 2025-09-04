@@ -20,11 +20,14 @@ class_name MazeStyle
 @export var wall_atlas_coords: Vector2i = Vector2i(0, 0)  # Fallback for non-terrain walls
 @export var wall_alternative_tile: int = 0  # Fallback for non-terrain walls
 
-# Arrow/marker configuration
-@export_group("Markers")
-@export var arrow_source_id: int = 0
-@export var start_arrow_atlas_coords: Vector2i = Vector2i(0, 1)
-@export var end_arrow_atlas_coords: Vector2i = Vector2i(1, 1)
+# Object configuration (start/end markers, items, etc.)
+@export_group("Objects")
+@export var has_start_end_objects: bool = true
+@export var object_source_id: int = 0
+@export var start_tile_atlas_coords: Vector2i = Vector2i(0, 0)
+@export var end_tile_atlas_coords: Vector2i = Vector2i(1, 0)
+@export var start_tile_alternative: int = 0
+@export var end_tile_alternative: int = 0
 
 # Style description for UI
 @export_multiline var description: String = ""
