@@ -6,7 +6,11 @@
 [node name="MazeGenerator" type="Node2D"]
 script = ExtResource("2_maze_script")
 
-[node name="TileMapLayer" type="TileMapLayer" parent="."]
+[node name="PassageTileMapLayer" type="TileMapLayer" parent="."]
+position = Vector2(200, 200)
+tile_set = ExtResource("1_maze_tileset")
+
+[node name="WallTileMapLayer" type="TileMapLayer" parent="."]
 position = Vector2(200, 200)
 tile_set = ExtResource("1_maze_tileset")
 

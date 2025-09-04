@@ -14,8 +14,10 @@ class_name MazeStyle
 @export_group("Walls")
 @export var has_walls: bool = true
 @export var wall_source_id: int = 0
-@export var wall_atlas_coords: Vector2i = Vector2i(0, 0)
-@export var wall_alternative_tile: int = 0
+@export var wall_terrain_set: int = 1
+@export var wall_terrain_id: int = 0
+@export var wall_atlas_coords: Vector2i = Vector2i(0, 0)  # Fallback for non-terrain walls
+@export var wall_alternative_tile: int = 0  # Fallback for non-terrain walls
 
 # Arrow/marker configuration
 @export_group("Markers")

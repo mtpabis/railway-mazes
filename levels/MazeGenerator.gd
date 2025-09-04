@@ -1,7 +1,8 @@
 extends Node2D
 class_name MazeGenerator
 
-@onready var tilemap_layer: TileMapLayer = $TileMapLayer
+@onready var passage_tilemap_layer: TileMapLayer = $PassageTileMapLayer
+@onready var wall_tilemap_layer: TileMapLayer = $WallTileMapLayer
 @onready var generate_button: Button = $UI/VBoxContainer/GenerateButton
 @onready var clear_button: Button = $UI/VBoxContainer/ClearButton
 @onready var width_spinbox: SpinBox = $UI/VBoxContainer/SizeContainer/WidthSpinBox
@@ -45,17 +46,33 @@ func setup_styles():
 		update_tileset()
 
 func create_default_railway_style():
-	"""Create a default railway style for backward compatibility"""
-	var railway_style = MazeStyle.new()
-	railway_style.style_name = "Railway (No Walls)"
-	railway_style.tileset = preload("res://levels/tileset.tres")
-	railway_style.passage_source_id = 1
-	railway_style.passage_terrain_set = 0 
-	railway_style.passage_terrain_id = 0
-	railway_style.has_walls = false
-	railway_style.arrow_source_id = 0
-	railway_style.description = "Classic railway tracks with empty walls"
-	available_styles.append(railway_style)
+	"""Create default railway styles for backward compatibility"""
+	# Railway without walls (original behavior)
+	var railway_no_walls = MazeStyle.new()
+	railway_no_walls.style_name = "Railway (No Walls)"
+	railway_no_walls.tileset = preload("res://levels/tileset.tres")
+	railway_no_walls.passage_source_id = 1
+	railway_no_walls.passage_terrain_set = 0 
+	railway_no_walls.passage_terrain_id = 0
+	railway_no_walls.has_walls = false
+	railway_no_walls.arrow_source_id = 0
+	railway_no_walls.description = "Classic railway tracks with empty space"
+	available_styles.append(railway_no_walls)
+	
+	# Railway with walls (if wall terrain exists)
+	var railway_with_walls = MazeStyle.new()
+	railway_with_walls.style_name = "Railway with Wall Terrain"
+	railway_with_walls.tileset = preload("res://levels/tileset.tres")
+	railway_with_walls.passage_source_id = 1
+	railway_with_walls.passage_terrain_set = 0 
+	railway_with_walls.passage_terrain_id = 0
+	railway_with_walls.has_walls = true
+	railway_with_walls.wall_source_id = 1
+	railway_with_walls.wall_terrain_set = 1  # Assuming terrain set 1 exists for walls
+	railway_with_walls.wall_terrain_id = 0
+	railway_with_walls.arrow_source_id = 0
+	railway_with_walls.description = "Railway tracks with auto-connecting wall terrain"
+	available_styles.append(railway_with_walls)
 
 func _on_style_changed(index: int):
 	"""Handle style dropdown selection"""
@@ -65,9 +82,10 @@ func _on_style_changed(index: int):
 		info_label.text = "Status: Style changed to '%s'" % current_style.get_style_display_name()
 
 func update_tileset():
-	"""Update tilemap with current style's tileset"""
+	"""Update tilemaps with current style's tileset"""
 	if current_style and current_style.tileset:
-		tilemap_layer.tile_set = current_style.tileset
+		passage_tilemap_layer.tile_set = current_style.tileset
+		wall_tilemap_layer.tile_set = current_style.tileset
 
 func _on_generate_pressed():
 	maze_width = int(width_spinbox.value)
@@ -87,7 +105,8 @@ func _on_generate_pressed():
 	info_label.text = "Status: Generated %dx%d maze successfully!" % [maze_width, maze_height]
 
 func _on_clear_pressed():
-	tilemap_layer.clear()
+	passage_tilemap_layer.clear()
+	wall_tilemap_layer.clear()
 	info_label.text = "Status: Cleared - Ready for new generation"
 
 func generate_maze():
@@ -140,39 +159,47 @@ func get_unvisited_neighbors(pos: Vector2i) -> Array[Vector2i]:
 	return neighbors
 
 func place_tiles():
-	"""Convert abstract maze to tilemap using current style"""
+	"""Convert abstract maze to dual tilemaps using current style"""
 	if not current_style:
 		info_label.text = "Status: Error - No style selected"
 		return
 		
 	# Clear existing tiles
-	tilemap_layer.clear()
+	passage_tilemap_layer.clear()
+	wall_tilemap_layer.clear()
 	
-	# Place walls first (if style has walls)
+	# Place passages first (bottom layer)
+	place_passages()
+	
+	# Place walls on top (if style has walls)
 	if current_style.has_walls:
 		place_walls()
 	
-	# Place passages (tracks/paths)
-	place_passages()
-	
-	# Force terrain update
-	tilemap_layer.notify_runtime_tile_data_update()
+	# Force terrain updates
+	passage_tilemap_layer.notify_runtime_tile_data_update()
+	wall_tilemap_layer.notify_runtime_tile_data_update()
 	
 	# Add start/end arrows
 	add_start_end_arrows()
 
 func place_walls():
-	"""Place wall tiles for all non-passage positions"""
+	"""Place wall tiles using terrain system for all non-passage positions"""
+	var wall_positions: Array[Vector2i] = []
+	
+	# Collect all wall positions
 	for y in range(maze_height):
 		for x in range(maze_width):
 			if not maze[y][x]:  # If this is a wall
 				var pos = Vector2i(x, y)
-				tilemap_layer.set_cell(
-					pos, 
-					current_style.wall_source_id, 
-					current_style.wall_atlas_coords, 
-					current_style.wall_alternative_tile
-				)
+				wall_positions.append(pos)
+	
+	# Apply wall terrain to all wall positions at once
+	if wall_positions.size() > 0:
+		wall_tilemap_layer.set_cells_terrain_connect(
+			wall_positions,
+			current_style.wall_terrain_set,
+			current_style.wall_terrain_id
+		)
 
 func place_passages():
 	"""Place passage tiles (tracks/paths) with terrain connections"""
@@ -185,9 +212,9 @@ func place_passages():
 				var pos = Vector2i(x, y)
 				passage_positions.append(pos)
 	
-	# Apply terrain to all passage positions at once
+	# Apply passage terrain to all passage positions at once
 	if passage_positions.size() > 0:
-		tilemap_layer.set_cells_terrain_connect(
+		passage_tilemap_layer.set_cells_terrain_connect(
 			passage_positions, 
 			current_style.passage_terrain_set, 
 			current_style.passage_terrain_id
@@ -218,9 +245,9 @@ func add_start_end_arrows():
 		if end_pos != Vector2i.ZERO:
 			break
 	
-	# Place arrow tiles using current style
+	# Place arrow tiles on top of passages using current style
 	if start_pos != Vector2i.ZERO:
-		tilemap_layer.set_cell(start_pos, current_style.arrow_source_id, current_style.start_arrow_atlas_coords, 0)
+		passage_tilemap_layer.set_cell(start_pos, current_style.arrow_source_id, current_style.start_arrow_atlas_coords, 0)
 	
 	if end_pos != Vector2i.ZERO and end_pos != start_pos:
-		tilemap_layer.set_cell(end_pos, current_style.arrow_source_id, current_style.end_arrow_atlas_coords, 0)
+		passage_tilemap_layer.set_cell(end_pos, current_style.arrow_source_id, current_style.end_arrow_atlas_coords, 0)
