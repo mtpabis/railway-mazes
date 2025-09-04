@@ -135,9 +135,12 @@ func _on_generate_pressed():
 	info_label.text = "Status: Generated %dx%d maze successfully!" % [maze_width, maze_height]
 
 func _on_clear_pressed():
-	passage_tilemap_layer.clear()
-	wall_tilemap_layer.clear()
-	object_tilemap_layer.clear()
+	if passage_tilemap_layer:
+		passage_tilemap_layer.clear()
+	if wall_tilemap_layer:
+		wall_tilemap_layer.clear()
+	if object_tilemap_layer:
+		object_tilemap_layer.clear()
 	info_label.text = "Status: Cleared - Ready for new generation"
 
 func generate_maze():
@@ -200,9 +203,12 @@ func place_tiles():
 		return
 		
 	# Clear existing tiles
-	passage_tilemap_layer.clear()
-	wall_tilemap_layer.clear()
-	object_tilemap_layer.clear()
+	if passage_tilemap_layer:
+		passage_tilemap_layer.clear()
+	if wall_tilemap_layer:
+		wall_tilemap_layer.clear()
+	if object_tilemap_layer:
+		object_tilemap_layer.clear()
 	
 	# Place passages (if style has passages)
 	if current_style.has_passages:
@@ -217,9 +223,12 @@ func place_tiles():
 		place_objects()
 	
 	# Force terrain updates
-	passage_tilemap_layer.notify_runtime_tile_data_update()
-	wall_tilemap_layer.notify_runtime_tile_data_update()
-	object_tilemap_layer.notify_runtime_tile_data_update()
+	if passage_tilemap_layer:
+		passage_tilemap_layer.notify_runtime_tile_data_update()
+	if wall_tilemap_layer:
+		wall_tilemap_layer.notify_runtime_tile_data_update()
+	if object_tilemap_layer:
+		object_tilemap_layer.notify_runtime_tile_data_update()
 
 func place_walls():
 	"""Place wall tiles using terrain system for all non-passage positions"""
@@ -233,7 +242,7 @@ func place_walls():
 				wall_positions.append(pos)
 	
 	# Apply wall terrain to all wall positions at once
-	if wall_positions.size() > 0:
+	if wall_positions.size() > 0 and wall_tilemap_layer:
 		wall_tilemap_layer.set_cells_terrain_connect(
 			wall_positions,
 			current_style.wall_terrain_set,
@@ -252,7 +261,7 @@ func place_passages():
 				passage_positions.append(pos)
 	
 	# Apply passage terrain to all passage positions at once
-	if passage_positions.size() > 0:
+	if passage_positions.size() > 0 and passage_tilemap_layer:
 		passage_tilemap_layer.set_cells_terrain_connect(
 			passage_positions, 
 			current_style.passage_terrain_set, 
@@ -285,7 +294,7 @@ func place_objects():
 			break
 	
 	# Place start and end object tiles on the object layer (always on top)
-	if start_pos != Vector2i.ZERO:
+	if start_pos != Vector2i.ZERO and object_tilemap_layer:
 		object_tilemap_layer.set_cell(
 			start_pos, 
 			current_style.object_source_id, 
@@ -293,7 +302,7 @@ func place_objects():
 			current_style.start_tile_alternative
 		)
 	
-	if end_pos != Vector2i.ZERO and end_pos != start_pos:
+	if end_pos != Vector2i.ZERO and end_pos != start_pos and object_tilemap_layer:
 		object_tilemap_layer.set_cell(
 			end_pos, 
 			current_style.object_source_id, 
