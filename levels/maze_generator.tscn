@@ -1,10 +1,13 @@
-[gd_scene load_steps=3 format=3 uid="uid://dthd0gs3c414o"]
+[gd_scene load_steps=5 format=3 uid="uid://dthd0gs3c414o"]
 
 [ext_resource type="TileSet" uid="uid://cfr3g543ytxy1" path="res://levels/tileset.tres" id="1_maze_tileset"]
+[ext_resource type="Script" uid="uid://b3hsjehptw4gj" path="res://levels/MazeStyle.gd" id="2_gfk5l"]
 [ext_resource type="Script" uid="uid://cvfoctp3limx8" path="res://levels/MazeGenerator.gd" id="2_maze_script"]
+[ext_resource type="MazeStyle" uid="uid://bvsv4l2n7g6lh" path="res://levels/styles/railway_with_walls.tres" id="3_wm03m"]
 
 [node name="MazeGenerator" type="Node2D"]
 script = ExtResource("2_maze_script")
+available_styles = Array[ExtResource("2_gfk5l")]([ExtResource("3_wm03m")])
 
 [node name="PassageTileMapLayer" type="TileMapLayer" parent="."]
 position = Vector2(200, 200)

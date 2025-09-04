@@ -59,7 +59,7 @@ func create_default_railway_style():
 	railway_passages.passage_terrain_id = 0
 	railway_passages.has_walls = false
 	railway_passages.has_start_end_objects = true
-	railway_passages.object_source_id = 0
+	railway_passages.object_source_id = 6
 	railway_passages.start_tile_atlas_coords = Vector2i(0, 0)
 	railway_passages.end_tile_atlas_coords = Vector2i(1, 0)
 	railway_passages.description = "Passages define maze (walls empty)"
@@ -78,7 +78,7 @@ func create_default_railway_style():
 	railway_both.wall_terrain_set = 1  # Wall terrain set from updated tileset
 	railway_both.wall_terrain_id = 0
 	railway_both.has_start_end_objects = true
-	railway_both.object_source_id = 0
+	railway_both.object_source_id = 6
 	railway_both.start_tile_atlas_coords = Vector2i(0, 1)
 	railway_both.end_tile_atlas_coords = Vector2i(1, 1)
 	railway_both.description = "Both passages and walls visible"
@@ -94,7 +94,7 @@ func create_default_railway_style():
 	dungeon_walls.wall_terrain_set = 1  # Wall terrain set from updated tileset
 	dungeon_walls.wall_terrain_id = 0
 	dungeon_walls.has_start_end_objects = true
-	dungeon_walls.object_source_id = 0
+	dungeon_walls.object_source_id = 6
 	dungeon_walls.start_tile_atlas_coords = Vector2i(0, 0)
 	dungeon_walls.end_tile_atlas_coords = Vector2i(1, 0)
 	dungeon_walls.description = "Walls define maze (passages empty)"
@@ -110,9 +110,12 @@ func _on_style_changed(index: int):
 func update_tileset():
 	"""Update tilemaps with current style's tileset"""
 	if current_style and current_style.tileset:
-		passage_tilemap_layer.tile_set = current_style.tileset
-		wall_tilemap_layer.tile_set = current_style.tileset
-		object_tilemap_layer.tile_set = current_style.tileset
+		if passage_tilemap_layer:
+			passage_tilemap_layer.tile_set = current_style.tileset
+		if wall_tilemap_layer:
+			wall_tilemap_layer.tile_set = current_style.tileset
+		if object_tilemap_layer:
+			object_tilemap_layer.tile_set = current_style.tileset
 
 func _on_generate_pressed():
 	maze_width = int(width_spinbox.value)
