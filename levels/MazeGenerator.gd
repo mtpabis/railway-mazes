@@ -100,39 +100,25 @@ func place_tiles():
 	# Clear existing tiles
 	tilemap_layer.clear()
 	
-	# Place track tiles individually with proper terrain connections
+	# Collect all track positions first
+	var track_positions: Array[Vector2i] = []
+	
+	# Collect track positions where maze has passages
 	for y in range(maze_height):
 		for x in range(maze_width):
 			if maze[y][x]:  # If this is a passage
 				var pos = Vector2i(x, y)
-				place_track_with_connections(pos)
+				track_positions.append(pos)
+	
+	# Apply terrain to all track positions at once (this places AND connects tiles)
+	if track_positions.size() > 0:
+		tilemap_layer.set_cells_terrain_connect(track_positions, TRACK_TERRAIN_SET, TRACK_TERRAIN)
 	
 	# Force terrain update
 	tilemap_layer.notify_runtime_tile_data_update()
 	
 	# Add start/end arrows
 	add_start_end_arrows()
-
-func place_track_with_connections(pos: Vector2i):
-	"""Place a track tile with only the connections that should exist"""
-	# First place the tile
-	tilemap_layer.set_cell(pos, TRACK_SOURCE_ID, Vector2i(0, 0), 0)
-	
-	# Find which neighbors should connect (only if they're also passages in the maze)
-	var connected_neighbors: Array[Vector2i] = []
-	var directions = [Vector2i(0, -1), Vector2i(1, 0), Vector2i(0, 1), Vector2i(-1, 0)]  # N, E, S, W
-	
-	for direction in directions:
-		var neighbor_pos = pos + direction
-		# Check if neighbor is within bounds and is a passage
-		if (neighbor_pos.x >= 0 and neighbor_pos.x < maze_width and
-			neighbor_pos.y >= 0 and neighbor_pos.y < maze_height and
-			maze[neighbor_pos.y][neighbor_pos.x]):
-			connected_neighbors.append(neighbor_pos)
-	
-	# Apply terrain connect only to this tile and its valid maze neighbors
-	var cells_to_connect = [pos] + connected_neighbors
-	tilemap_layer.set_cells_terrain_connect(cells_to_connect, TRACK_TERRAIN_SET, TRACK_TERRAIN, false)
 
 func add_start_end_arrows():
 	"""Add start and end arrow markers"""
