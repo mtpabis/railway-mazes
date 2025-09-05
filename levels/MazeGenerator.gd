@@ -211,6 +211,10 @@ func place_tiles():
 	if current_style.has_start_end_objects:
 		place_objects()
 	
+	# Place collectibles
+	if current_style.has_collectibles:
+		place_collectibles()
+	
 	# Force terrain updates
 	if passage_tilemap_layer:
 		passage_tilemap_layer.notify_runtime_tile_data_update()
@@ -298,6 +302,65 @@ func place_objects():
 			current_style.end_tile_atlas_coords, 
 			current_style.end_tile_alternative
 		)
+
+func place_collectibles():
+	"""Place collectible objects randomly on passages using the formula n = (width*height)^0.25"""
+	if not current_style or not current_style.has_collectibles:
+		return
+	
+	# Calculate base number of collectibles using the formula
+	var base_count = pow(maze_width * maze_height, 0.25)
+	
+	# Apply style multiplier
+	base_count *= current_style.collectible_count_multiplier
+	
+	# Add randomization: (0.75*n, 1.25*n)
+	var min_count = int(base_count * 0.75)
+	var max_count = int(base_count * 1.25)
+	var collectible_count = randi_range(min_count, max(min_count, max_count))
+	
+	# Collect all passage positions (excluding start/end if they exist)
+	var passage_positions: Array[Vector2i] = []
+	var start_pos = get_start_position()
+	var end_pos = get_end_position()
+	
+	for y in range(maze_height):
+		for x in range(maze_width):
+			if maze[y][x]:  # If this is a passage
+				var pos = Vector2i(x, y)
+				# Exclude start and end positions
+				if pos != start_pos and pos != end_pos:
+					passage_positions.append(pos)
+	
+	# Place collectibles randomly
+	passage_positions.shuffle()
+	var placed_count = min(collectible_count, passage_positions.size())
+	
+	for i in range(placed_count):
+		var pos = passage_positions[i]
+		if object_tilemap_layer:
+			object_tilemap_layer.set_cell(
+				pos,
+				current_style.collectible_source_id,
+				current_style.collectible_atlas_coords,
+				current_style.collectible_alternative
+			)
+
+func get_start_position() -> Vector2i:
+	"""Get the start position (same logic as in place_objects)"""
+	for y in range(maze_height):
+		for x in range(maze_width):
+			if maze[y][x]:  # Found first passage
+				return Vector2i(x, y)
+	return Vector2i.ZERO
+
+func get_end_position() -> Vector2i:
+	"""Get the end position (same logic as in place_objects)"""
+	for y in range(maze_height - 1, -1, -1):
+		for x in range(maze_width - 1, -1, -1):
+			if maze[y][x]:  # Found last passage
+				return Vector2i(x, y)
+	return Vector2i.ZERO
 
 func setup_export_manager():
 	"""Initialize the export manager"""

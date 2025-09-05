@@ -29,6 +29,14 @@ class_name MazeStyle
 @export var start_tile_alternative: int = 0
 @export var end_tile_alternative: int = 0
 
+# Collectible configuration
+@export_group("Collectibles")
+@export var has_collectibles: bool = false
+@export var collectible_source_id: int = 0
+@export var collectible_atlas_coords: Vector2i = Vector2i(0, 1)
+@export var collectible_alternative: int = 0
+@export var collectible_count_multiplier: float = 1.0  # Multiplies the base formula result
+
 # Style description for UI
 @export_multiline var description: String = ""
 
