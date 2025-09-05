@@ -1,0 +1,31 @@
+[gd_resource type="Resource" script_class="MazeStyle" load_steps=3 format=3 uid="uid://cive5cf7cclr8"]
+
+[ext_resource type="Script" uid="uid://b3hsjehptw4gj" path="res://levels/MazeStyle.gd" id="1_r34fq"]
+[ext_resource type="TileSet" uid="uid://cfr3g543ytxy1" path="res://levels/tileset.tres" id="2_35k81"]
+
+[resource]
+script = ExtResource("1_r34fq")
+style_name = "ROBBO STYLE"
+tileset = ExtResource("2_35k81")
+has_passages = false
+passage_source_id = 10
+passage_terrain_set = 0
+passage_terrain_id = 0
+has_walls = true
+wall_source_id = 10
+wall_terrain_set = 1
+wall_terrain_id = 0
+wall_atlas_coords = Vector2i(6, 2)
+wall_alternative_tile = 0
+has_start_end_objects = true
+object_source_id = 10
+start_tile_atlas_coords = Vector2i(3, 0)
+end_tile_atlas_coords = Vector2i(2, 0)
+start_tile_alternative = 0
+end_tile_alternative = 0
+has_collectibles = true
+collectible_source_id = 10
+collectible_atlas_coords = Vector2i(1, 0)
+collectible_alternative = 0
+collectible_count_multiplier = 1.0
+description = "Railway tracks with solid stone wall barriers and collectible items"
