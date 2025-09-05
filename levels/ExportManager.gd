@@ -48,6 +48,9 @@ func export_maze_png(quality: ExportQuality = ExportQuality.PRINT) -> String:
 	
 	export_started.emit("PNG")
 	
+	# Hide UI during export
+	var ui_layer = hide_ui_for_export()
+	
 	var file_path = get_export_file_path("png")
 	var success = false
 	
@@ -79,6 +82,9 @@ func export_maze_png(quality: ExportQuality = ExportQuality.PRINT) -> String:
 	if export_viewport:
 		export_viewport.queue_free()
 		export_viewport = null
+		
+	# Restore UI visibility
+	restore_ui_after_export(ui_layer)
 	
 	if success:
 		export_completed.emit("PNG", file_path)
@@ -192,6 +198,25 @@ func get_maze_bounds() -> Rect2:
 	max_pos += tile_size
 	
 	return Rect2(min_pos, max_pos - min_pos)
+
+func hide_ui_for_export() -> CanvasLayer:
+	"""Hide UI during export by finding and hiding the UI layer"""
+	var scene_root = maze_generator.get_parent()
+	if not scene_root:
+		return null
+		
+	# Look for UILayer created by setup_ui_detachment
+	var ui_layer = scene_root.get_node("UILayer")
+	if ui_layer and ui_layer is CanvasLayer:
+		ui_layer.visible = false
+		return ui_layer
+	
+	return null
+
+func restore_ui_after_export(ui_layer: CanvasLayer):
+	"""Restore UI visibility after export"""
+	if ui_layer:
+		ui_layer.visible = true
 
 func get_export_file_path(extension: String) -> String:
 	"""Generate timestamped file path for export"""

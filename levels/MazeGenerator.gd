@@ -17,6 +17,7 @@ class_name MazeGenerator
 @onready var zoom_in_button: Button = $UI/VBoxContainer/CameraContainer/ZoomContainer/ZoomInButton
 @onready var zoom_out_button: Button = $UI/VBoxContainer/CameraContainer/ZoomContainer/ZoomOutButton
 @onready var zoom_label: Label = $UI/VBoxContainer/CameraContainer/ZoomContainer/ZoomLabel
+@onready var ui_node: Control = $UI
 
 # Available maze styles
 @export var available_styles: Array[MazeStyle] = []
@@ -48,7 +49,27 @@ func _ready():
 	
 	setup_export_manager()
 	setup_styles()
+	call_deferred("setup_ui_detachment")
 	info_label.text = "Status: Ready - Select style and click Generate"
+
+func setup_ui_detachment():
+	"""Make UI camera-independent by creating a CanvasLayer that follows camera-independent coordinate system"""
+	if not ui_node:
+		return
+		
+	# Create a CanvasLayer that will contain the UI
+	var canvas_layer = CanvasLayer.new()
+	canvas_layer.name = "UILayer"
+	
+	# Add it to the scene tree at the same level as this MazeGenerator
+	get_parent().add_child(canvas_layer)
+	
+	# Move UI to the canvas layer
+	ui_node.reparent(canvas_layer)
+	
+	# Reset UI positioning to be viewport-relative instead of world-relative
+	ui_node.position = Vector2(10.0, 10.0)
+	ui_node.scale = Vector2(2.0, 2.0)
 
 func setup_styles():
 	"""Initialize available styles and populate dropdown"""
