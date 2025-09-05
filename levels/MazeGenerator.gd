@@ -10,6 +10,9 @@ class_name MazeGenerator
 @onready var height_spinbox: SpinBox = $UI/VBoxContainer/SizeContainer/HeightSpinBox
 @onready var style_dropdown: OptionButton = $UI/VBoxContainer/StyleContainer/StyleDropdown
 @onready var info_label: Label = $UI/VBoxContainer/InfoLabel
+@onready var export_png_button: Button = $UI/VBoxContainer/ExportContainer/ExportButtons/ExportPNGButton
+@onready var export_pdf_button: Button = $UI/VBoxContainer/ExportContainer/ExportButtons/ExportPDFButton
+@onready var print_preview_button: Button = $UI/VBoxContainer/ExportContainer/ExportButtons/PrintPreviewButton
 
 # Available maze styles
 @export var available_styles: Array[MazeStyle] = []
@@ -20,11 +23,18 @@ var maze: Array[Array]  # 2D array: true = passage (track), false = wall (empty)
 var maze_width: int
 var maze_height: int
 
+# Export manager
+var export_manager: ExportManager
+
 func _ready():
 	generate_button.pressed.connect(_on_generate_pressed)
 	clear_button.pressed.connect(_on_clear_pressed)
 	style_dropdown.item_selected.connect(_on_style_changed)
+	export_png_button.pressed.connect(_on_export_png_pressed)
+	export_pdf_button.pressed.connect(_on_export_pdf_pressed)
+	print_preview_button.pressed.connect(_on_print_preview_pressed)
 	
+	setup_export_manager()
 	setup_styles()
 	info_label.text = "Status: Ready - Select style and click Generate"
 
@@ -252,3 +262,42 @@ func place_objects():
 			current_style.end_tile_atlas_coords, 
 			current_style.end_tile_alternative
 		)
+
+func setup_export_manager():
+	"""Initialize the export manager"""
+	export_manager = ExportManager.new(self)
+	add_child(export_manager)
+	
+	# Connect export signals
+	export_manager.export_started.connect(_on_export_started)
+	export_manager.export_completed.connect(_on_export_completed)
+	export_manager.export_failed.connect(_on_export_failed)
+
+func _on_export_png_pressed():
+	"""Handle PNG export button press"""
+	if not maze or maze.is_empty():
+		info_label.text = "Status: Error - Generate a maze first before exporting"
+		return
+	
+	info_label.text = "Status: Exporting PNG..."
+	export_manager.export_maze_png()
+
+func _on_export_pdf_pressed():
+	"""Handle PDF export button press"""
+	info_label.text = "Status: PDF export not yet implemented"
+
+func _on_print_preview_pressed():
+	"""Handle print preview button press"""
+	info_label.text = "Status: Print preview not yet implemented"
+
+func _on_export_started(format: String):
+	"""Handle export started signal"""
+	info_label.text = "Status: Exporting %s..." % format
+
+func _on_export_completed(format: String, file_path: String):
+	"""Handle export completed signal"""
+	info_label.text = "Status: %s exported successfully to %s" % [format, file_path.get_file()]
+
+func _on_export_failed(format: String, error: String):
+	"""Handle export failed signal"""
+	info_label.text = "Status: Export failed - %s" % error

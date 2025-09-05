@@ -10,15 +10,12 @@ script = ExtResource("2_maze_script")
 available_styles = Array[ExtResource("2_gfk5l")]([ExtResource("3_wm03m")])
 
 [node name="PassageTileMapLayer" type="TileMapLayer" parent="."]
-position = Vector2(200, 200)
 tile_set = ExtResource("1_maze_tileset")
 
 [node name="WallTileMapLayer" type="TileMapLayer" parent="."]
-position = Vector2(200, 200)
 tile_set = ExtResource("1_maze_tileset")
 
 [node name="ObjectTileMapLayer" type="TileMapLayer" parent="."]
-position = Vector2(200, 200)
 tile_set = ExtResource("1_maze_tileset")
 
 [node name="UI" type="Control" parent="."]
@@ -94,6 +91,34 @@ layout_mode = 2
 text = "Clear"
 
 [node name="HSeparator4" type="HSeparator" parent="UI/VBoxContainer"]
+layout_mode = 2
+
+[node name="ExportContainer" type="VBoxContainer" parent="UI/VBoxContainer"]
+layout_mode = 2
+
+[node name="ExportLabel" type="Label" parent="UI/VBoxContainer/ExportContainer"]
+layout_mode = 2
+text = "Export:"
+
+[node name="ExportButtons" type="HBoxContainer" parent="UI/VBoxContainer/ExportContainer"]
+layout_mode = 2
+
+[node name="ExportPNGButton" type="Button" parent="UI/VBoxContainer/ExportContainer/ExportButtons"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "PNG"
+
+[node name="ExportPDFButton" type="Button" parent="UI/VBoxContainer/ExportContainer/ExportButtons"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "PDF"
+
+[node name="PrintPreviewButton" type="Button" parent="UI/VBoxContainer/ExportContainer/ExportButtons"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Preview"
+
+[node name="HSeparator5" type="HSeparator" parent="UI/VBoxContainer"]
 layout_mode = 2
 
 [node name="InfoLabel" type="Label" parent="UI/VBoxContainer"]
