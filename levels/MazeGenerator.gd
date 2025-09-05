@@ -11,6 +11,12 @@ class_name MazeGenerator
 @onready var style_dropdown: OptionButton = $UI/VBoxContainer/StyleContainer/StyleDropdown
 @onready var info_label: Label = $UI/VBoxContainer/InfoLabel
 @onready var export_png_button: Button = $UI/VBoxContainer/ExportContainer/ExportPNGButton
+@onready var camera: Camera2D = $Camera2D
+@onready var fit_maze_button: Button = $UI/VBoxContainer/CameraContainer/CameraButtons/FitMazeButton
+@onready var reset_camera_button: Button = $UI/VBoxContainer/CameraContainer/CameraButtons/ResetCameraButton
+@onready var zoom_in_button: Button = $UI/VBoxContainer/CameraContainer/ZoomContainer/ZoomInButton
+@onready var zoom_out_button: Button = $UI/VBoxContainer/CameraContainer/ZoomContainer/ZoomOutButton
+@onready var zoom_label: Label = $UI/VBoxContainer/CameraContainer/ZoomContainer/ZoomLabel
 
 # Available maze styles
 @export var available_styles: Array[MazeStyle] = []
@@ -24,11 +30,21 @@ var maze_height: int
 # Export manager
 var export_manager: ExportManager
 
+# Camera settings
+var default_zoom := Vector2(1.0, 1.0)
+var zoom_step := 0.2
+var min_zoom := 0.1
+var max_zoom := 5.0
+
 func _ready():
 	generate_button.pressed.connect(_on_generate_pressed)
 	clear_button.pressed.connect(_on_clear_pressed)
 	style_dropdown.item_selected.connect(_on_style_changed)
 	export_png_button.pressed.connect(_on_export_png_pressed)
+	fit_maze_button.pressed.connect(_on_fit_maze_pressed)
+	reset_camera_button.pressed.connect(_on_reset_camera_pressed)
+	zoom_in_button.pressed.connect(_on_zoom_in_pressed)
+	zoom_out_button.pressed.connect(_on_zoom_out_pressed)
 	
 	setup_export_manager()
 	setup_styles()
@@ -80,6 +96,9 @@ func _on_generate_pressed():
 	
 	generate_maze()
 	place_tiles()
+	
+	# Auto-fit camera to show the whole maze
+	fit_camera_to_maze()
 	
 	info_label.text = "Status: Generated %dx%d maze successfully!" % [maze_width, maze_height]
 
@@ -290,3 +309,109 @@ func _on_export_completed(format: String, file_path: String):
 func _on_export_failed(format: String, error: String):
 	"""Handle export failed signal"""
 	info_label.text = "Status: Export failed - %s" % error
+
+# Camera control functions
+func fit_camera_to_maze():
+	"""Automatically fit camera to show the entire maze"""
+	if not camera or not maze or maze.is_empty():
+		return
+	
+	var maze_bounds = get_display_maze_bounds()
+	if maze_bounds.size == Vector2.ZERO:
+		return
+	
+	# Get viewport size
+	var viewport_size = get_viewport().get_visible_rect().size
+	
+	# Calculate the zoom needed to fit the maze in the viewport
+	# Leave some padding (20% of viewport on each side)
+	var padding_factor = 0.6  # Use 60% of viewport space for maze
+	var available_size = viewport_size * padding_factor
+	
+	var scale_x = available_size.x / maze_bounds.size.x
+	var scale_y = available_size.y / maze_bounds.size.y
+	var optimal_scale = min(scale_x, scale_y)
+	
+	# Set camera position to center of maze
+	camera.position = maze_bounds.get_center()
+	
+	# Set camera zoom
+	camera.zoom = Vector2(optimal_scale, optimal_scale)
+	
+	update_zoom_label()
+
+func get_display_maze_bounds() -> Rect2:
+	"""Get the bounds of the maze for display purposes (similar to export but for main view)"""
+	var min_pos = Vector2(INF, INF)
+	var max_pos = Vector2(-INF, -INF)
+	var found_tiles = false
+	
+	# Check all tilemap layers for used cells
+	var layers = [passage_tilemap_layer, wall_tilemap_layer, object_tilemap_layer]
+	
+	for layer in layers:
+		if not layer:
+			continue
+			
+		var used_cells = layer.get_used_cells()
+		for cell_pos in used_cells:
+			var world_pos = layer.to_global(layer.map_to_local(cell_pos))
+			min_pos.x = min(min_pos.x, world_pos.x)
+			min_pos.y = min(min_pos.y, world_pos.y)
+			max_pos.x = max(max_pos.x, world_pos.x)
+			max_pos.y = max(max_pos.y, world_pos.y)
+			found_tiles = true
+	
+	if not found_tiles:
+		return Rect2()
+	
+	# Add tile size to max_pos
+	var tile_size = Vector2(64, 64)  # Default fallback
+	if passage_tilemap_layer and passage_tilemap_layer.tile_set:
+		var tileset = passage_tilemap_layer.tile_set
+		if tileset.get_source_count() > 0:
+			var source = tileset.get_source(0)
+			if source is TileSetAtlasSource:
+				var atlas_source = source as TileSetAtlasSource
+				tile_size = Vector2(atlas_source.texture_region_size)
+	
+	max_pos += tile_size
+	
+	return Rect2(min_pos, max_pos - min_pos)
+
+func _on_fit_maze_pressed():
+	"""Handle fit maze button press"""
+	fit_camera_to_maze()
+
+func _on_reset_camera_pressed():
+	"""Reset camera to default position and zoom"""
+	if camera:
+		camera.position = Vector2.ZERO
+		camera.zoom = default_zoom
+		update_zoom_label()
+
+func _on_zoom_in_pressed():
+	"""Zoom in"""
+	if camera:
+		var new_zoom = camera.zoom + Vector2(zoom_step, zoom_step)
+		camera.zoom = Vector2(
+			min(new_zoom.x, max_zoom),
+			min(new_zoom.y, max_zoom)
+		)
+		update_zoom_label()
+
+func _on_zoom_out_pressed():
+	"""Zoom out"""
+	if camera:
+		var new_zoom = camera.zoom - Vector2(zoom_step, zoom_step)
+		camera.zoom = Vector2(
+			max(new_zoom.x, min_zoom),
+			max(new_zoom.y, min_zoom)
+		)
+		update_zoom_label()
+
+func update_zoom_label():
+	"""Update the zoom percentage label"""
+	if camera and zoom_label:
+		var zoom_percent = int(camera.zoom.x * 100)
+		zoom_label.text = "%d%%" % zoom_percent

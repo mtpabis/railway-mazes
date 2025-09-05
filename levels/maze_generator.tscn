@@ -18,6 +18,8 @@ tile_set = ExtResource("1_maze_tileset")
 [node name="ObjectTileMapLayer" type="TileMapLayer" parent="."]
 tile_set = ExtResource("1_maze_tileset")
 
+[node name="Camera2D" type="Camera2D" parent="."]
+
 [node name="UI" type="Control" parent="."]
 layout_mode = 3
 anchors_preset = 0
@@ -103,6 +105,43 @@ text = "Export:"
 [node name="ExportPNGButton" type="Button" parent="UI/VBoxContainer/ExportContainer"]
 layout_mode = 2
 text = "Export PNG (A4)"
+
+[node name="CameraContainer" type="VBoxContainer" parent="UI/VBoxContainer"]
+layout_mode = 2
+
+[node name="CameraLabel" type="Label" parent="UI/VBoxContainer/CameraContainer"]
+layout_mode = 2
+text = "View:"
+
+[node name="CameraButtons" type="HBoxContainer" parent="UI/VBoxContainer/CameraContainer"]
+layout_mode = 2
+
+[node name="FitMazeButton" type="Button" parent="UI/VBoxContainer/CameraContainer/CameraButtons"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Fit Maze"
+
+[node name="ResetCameraButton" type="Button" parent="UI/VBoxContainer/CameraContainer/CameraButtons"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Reset"
+
+[node name="ZoomContainer" type="HBoxContainer" parent="UI/VBoxContainer/CameraContainer"]
+layout_mode = 2
+
+[node name="ZoomOutButton" type="Button" parent="UI/VBoxContainer/CameraContainer/ZoomContainer"]
+layout_mode = 2
+text = "Zoom -"
+
+[node name="ZoomLabel" type="Label" parent="UI/VBoxContainer/CameraContainer/ZoomContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "100%"
+horizontal_alignment = 1
+
+[node name="ZoomInButton" type="Button" parent="UI/VBoxContainer/CameraContainer/ZoomContainer"]
+layout_mode = 2
+text = "Zoom +"
 
 [node name="HSeparator5" type="HSeparator" parent="UI/VBoxContainer"]
 layout_mode = 2
