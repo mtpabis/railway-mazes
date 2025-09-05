@@ -10,9 +10,7 @@ class_name MazeGenerator
 @onready var height_spinbox: SpinBox = $UI/VBoxContainer/SizeContainer/HeightSpinBox
 @onready var style_dropdown: OptionButton = $UI/VBoxContainer/StyleContainer/StyleDropdown
 @onready var info_label: Label = $UI/VBoxContainer/InfoLabel
-@onready var export_png_button: Button = $UI/VBoxContainer/ExportContainer/ExportButtons/ExportPNGButton
-@onready var export_pdf_button: Button = $UI/VBoxContainer/ExportContainer/ExportButtons/ExportPDFButton
-@onready var print_preview_button: Button = $UI/VBoxContainer/ExportContainer/ExportButtons/PrintPreviewButton
+@onready var export_png_button: Button = $UI/VBoxContainer/ExportContainer/ExportPNGButton
 
 # Available maze styles
 @export var available_styles: Array[MazeStyle] = []
@@ -31,8 +29,6 @@ func _ready():
 	clear_button.pressed.connect(_on_clear_pressed)
 	style_dropdown.item_selected.connect(_on_style_changed)
 	export_png_button.pressed.connect(_on_export_png_pressed)
-	export_pdf_button.pressed.connect(_on_export_pdf_pressed)
-	print_preview_button.pressed.connect(_on_print_preview_pressed)
 	
 	setup_export_manager()
 	setup_styles()
@@ -280,15 +276,8 @@ func _on_export_png_pressed():
 		return
 	
 	info_label.text = "Status: Exporting PNG..."
-	export_manager.export_maze_png()
+	await export_manager.export_maze_png()
 
-func _on_export_pdf_pressed():
-	"""Handle PDF export button press"""
-	info_label.text = "Status: PDF export not yet implemented"
-
-func _on_print_preview_pressed():
-	"""Handle print preview button press"""
-	info_label.text = "Status: Print preview not yet implemented"
 
 func _on_export_started(format: String):
 	"""Handle export started signal"""

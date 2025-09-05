@@ -7,9 +7,7 @@ signal export_failed(format: String, error: String)
 
 # Export formats
 enum ExportFormat {
-	PNG,
-	PDF,
-	PRINT_PREVIEW
+	PNG
 }
 
 # Export quality settings
@@ -40,7 +38,11 @@ func setup_export_viewport():
 
 func export_maze_png(quality: ExportQuality = ExportQuality.PRINT) -> String:
 	"""Export maze as PNG with specified quality"""
-	if not maze_generator or not maze_generator.maze:
+	if not maze_generator:
+		export_failed.emit("PNG", "No maze generator available")
+		return ""
+		
+	if not maze_generator.maze or maze_generator.maze.is_empty():
 		export_failed.emit("PNG", "No maze generated")
 		return ""
 	
@@ -74,8 +76,9 @@ func export_maze_png(quality: ExportQuality = ExportQuality.PRINT) -> String:
 		success = (error == OK)
 	
 	# Cleanup
-	export_viewport.queue_free()
-	export_viewport = null
+	if export_viewport:
+		export_viewport.queue_free()
+		export_viewport = null
 	
 	if success:
 		export_completed.emit("PNG", file_path)
@@ -176,7 +179,16 @@ func get_maze_bounds() -> Rect2:
 		return Rect2()
 	
 	# Add tile size to max_pos since we want the full tile coverage
-	var tile_size = Vector2(64, 64)  # Assuming 64x64 tiles, adjust if needed
+	# Get actual tile size from tileset if available
+	var tile_size = Vector2(64, 64)  # Default fallback
+	if layers[0] and layers[0].tile_set:
+		var tileset = layers[0].tile_set
+		if tileset.get_source_count() > 0:
+			var source = tileset.get_source(0)
+			if source is TileSetAtlasSource:
+				var atlas_source = source as TileSetAtlasSource
+				tile_size = Vector2(atlas_source.texture_region_size)
+	
 	max_pos += tile_size
 	
 	return Rect2(min_pos, max_pos - min_pos)
