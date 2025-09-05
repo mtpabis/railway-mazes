@@ -324,8 +324,8 @@ func fit_camera_to_maze():
 	var viewport_size = get_viewport().get_visible_rect().size
 	
 	# Calculate the zoom needed to fit the maze in the viewport
-	# Leave some padding (20% of viewport on each side)
-	var padding_factor = 0.6  # Use 60% of viewport space for maze
+	# Leave some padding (10% of viewport on each side)
+	var padding_factor = 0.8  # Use 80% of viewport space for maze
 	var available_size = viewport_size * padding_factor
 	
 	var scale_x = available_size.x / maze_bounds.size.x
